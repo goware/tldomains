@@ -1,6 +1,6 @@
 # Top-Level Domain Parser
 
-Tiny library to parse the subdomain and domain from a host string
+Tiny library to parse the subdomain, domain, and tld extension from a host string.
 
 ## Usage
 
