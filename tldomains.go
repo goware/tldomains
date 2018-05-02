@@ -1,42 +1,56 @@
-//go:generate becky -lib=false -wrap=bundle -var=_ tldomains.dat
 package tldomains
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strings"
 )
 
-var TLDs = make(map[string]struct{}, 0)
+var tlds = make(map[string]struct{}, 0)
 
-type asset struct {
-	Name    string
-	Content string
-	etag    string
+type tldomains struct {
+	CacheFile string
 }
 
-func bundle(a asset) asset {
-	list := strings.Split(a.Content, "\n")
+// New creates a new *tldomains using the specified filepath
+func New(cacheFile string) (*tldomains, error) {
+	data, err := ioutil.ReadFile(cacheFile)
+	if err != nil {
+		data, err = download()
+		if err != nil {
+			return &tldomains{}, err
+		}
+		if err = ioutil.WriteFile(cacheFile, data, 0644); err != nil {
+			return &tldomains{}, err
+		}
+	}
+	list := strings.Split(string(data), "\n")
 	for _, item := range list {
 		if item == "" || strings.HasPrefix(item, "//") {
 			continue
 		}
-		TLDs[item] = struct{}{}
+		tlds[item] = struct{}{}
 	}
-	return a
+
+	return &tldomains{CacheFile: cacheFile}, nil
 }
 
+// Host contains the parsed info for the domain
 type Host struct {
-	Subdomain, Domain, Suffix string
+	Subdomain, Root, Suffix string
 }
 
-func Parse(host string) Host {
+// Parse extracts a domain into it's component parts
+func (extract *tldomains) Parse(host string) Host {
 	var h Host
 
 	nhost := strings.ToLower(host)
 	parts := strings.Split(nhost, ".")
 
 	if len(parts) == 0 {
-		h.Domain = host
+		h.Root = host
 		return h
 	}
 
@@ -50,14 +64,38 @@ func Parse(host string) Host {
 			suffix = fmt.Sprintf("%s.%s", p, suffix)
 		}
 
-		if _, ok := TLDs[suffix]; ok {
+		if _, ok := tlds[suffix]; ok {
 			h.Suffix = suffix
-		} else if h.Domain == "" {
-			h.Domain = p
+		} else if h.Root == "" {
+			h.Root = p
 		} else {
 			h.Subdomain = p
 		}
 	}
 
 	return h
+}
+
+func download() ([]byte, error) {
+
+	u := "https://publicsuffix.org/list/public_suffix_list.dat"
+	resp, err := http.Get(u)
+	if err != nil {
+		return []byte(""), err
+	}
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	lines := strings.Split(string(body), "\n")
+	var buffer bytes.Buffer
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line != "" && !strings.HasPrefix(line, "//") {
+			buffer.WriteString(line)
+			buffer.WriteString("\n")
+		}
+	}
+
+	return buffer.Bytes(), nil
 }

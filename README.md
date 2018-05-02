@@ -5,17 +5,16 @@ Tiny library to parse the subdomain, domain, and tld extension from a host strin
 ## Usage
 
 ```go
-hostInfo := tldomains.Parse("mmmm.jello.co.uk")
+extract, err := tldomains.New("/tmp/tld.cache")
+if err != nil {
+	fmt.Fprintf(os.Stderr, "error creating cache: %s", err)
+}
+hostInfo := extract.Parse("mmmm.jello.co.uk")
 // hostInfo.Subdomain = "mmmm"
-// hostInfo.Domain = "jello"
+// hostInfo.Root = "jello"
 // hostInfo.Suffix = "co.uk"
 ```
 
-## Build
-
-`make dist` will update the tldomains.dat file from https://publicsuffix.org/list/effective_tld_names.dat and rebuild the library.
-
-The tld data file is automatically bundled in this library for distribution in tldomains.dat.gen.go.
 
 ## License
 
