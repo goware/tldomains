@@ -11,7 +11,7 @@ if err != nil {
 }
 hostInfo := extract.Parse("mmmm.jello.co.uk")
 // hostInfo.Subdomain = "mmmm"
-// hostInfo.Domain = "jello"
+// hostInfo.Root = "jello"
 // hostInfo.Suffix = "co.uk"
 ```
 

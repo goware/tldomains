@@ -15,7 +15,7 @@ func TestTLDomains(t *testing.T) {
 	extract, _ := New("/tmp/tld.cache")
 	for _, tt := range tests {
 		h := extract.Parse(tt.in)
-		if h.Subdomain != tt.out.Subdomain || h.Domain != tt.out.Domain || h.Suffix != tt.out.Suffix {
+		if h.Subdomain != tt.out.Subdomain || h.Root != tt.out.Root || h.Suffix != tt.out.Suffix {
 			t.Errorf("expected %v, got %v", tt.out, h)
 		}
 	}

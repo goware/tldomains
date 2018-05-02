@@ -37,8 +37,9 @@ func New(cacheFile string) (*tldomains, error) {
 	return &tldomains{CacheFile: cacheFile}, nil
 }
 
+// Host contains the parsed info for the domain
 type Host struct {
-	Subdomain, Domain, Suffix string
+	Subdomain, Root, Suffix string
 }
 
 // Parse extracts a domain into it's component parts
@@ -49,7 +50,7 @@ func (extract *tldomains) Parse(host string) Host {
 	parts := strings.Split(nhost, ".")
 
 	if len(parts) == 0 {
-		h.Domain = host
+		h.Root = host
 		return h
 	}
 
@@ -65,8 +66,8 @@ func (extract *tldomains) Parse(host string) Host {
 
 		if _, ok := tlds[suffix]; ok {
 			h.Suffix = suffix
-		} else if h.Domain == "" {
-			h.Domain = p
+		} else if h.Root == "" {
+			h.Root = p
 		} else {
 			h.Subdomain = p
 		}
