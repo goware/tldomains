@@ -11,7 +11,7 @@ import (
 var tlds = make(map[string]struct{}, 0)
 
 type tldomains struct {
-	CacheFile  string
+	CacheFile string
 }
 
 // New creates a new *tldomains using the specified filepath
@@ -36,7 +36,6 @@ func New(cacheFile string) (*tldomains, error) {
 
 	return &tldomains{CacheFile: cacheFile}, nil
 }
-
 
 type Host struct {
 	Subdomain, Domain, Suffix string
@@ -75,7 +74,6 @@ func (extract *tldomains) Parse(host string) Host {
 
 	return h
 }
-
 
 func download() ([]byte, error) {
 
